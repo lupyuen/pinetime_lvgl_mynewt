@@ -29,19 +29,19 @@
 
 /// Init the LVGL library. Called by sysinit() during startup, defined in pkg.yml.
 void pinetime_lvgl_mynewt_init(void) {    
-    console_printf("Init LVGL..."); console_flush();
+    console_printf("Init LVGL...\n"); console_flush();
 
     //  Init the display controller
-    ////int rc = pinetime_lvgl_mynewt_init_display(); assert(rc == 0);
+    int rc = pinetime_lvgl_mynewt_init_display(); assert(rc == 0);
 
     //  Init the LVGL display
-    ////lv_init();
-    ////lv_port_disp_init();
+    lv_init();
+    lv_port_disp_init();
 }
 
 /// Render a Button Widget and a Label Widget
 int pinetime_lvgl_mynewt_test(void) {
-    console_printf("Test LVGL widgets..."); console_flush();
+    console_printf("Test LVGL widgets...\n"); console_flush();
     lv_obj_t *btn = lv_btn_create(lv_scr_act(), NULL);     //  Add a button the current screen
     lv_obj_set_pos(btn, 10, 10);                           //  Set its position
     lv_obj_set_size(btn, 120, 50);                         //  Set its size
@@ -53,7 +53,7 @@ int pinetime_lvgl_mynewt_test(void) {
 
 /// Render the LVGL display
 int pinetime_lvgl_mynewt_render(void) {
-    console_printf("Render LVGL display..."); console_flush();
+    console_printf("Render LVGL display...\n"); console_flush();
     //  Must tick at least 100 milliseconds to force LVGL to update display
     lv_tick_inc(100);
     //  LVGL will flush our display driver
