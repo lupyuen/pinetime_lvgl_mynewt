@@ -1,10 +1,10 @@
-# LVGL 7 Library for PineTime Smart Watch on Apache Mynewt OS
+# pinetime_lvgl_mynewt: LVGL 7 Library for PineTime Smart Watch on Apache Mynewt OS
 
 This library should be located at `pinetime-rust-mynewt/libs/pinetime_lvgl_mynewt`
 
 See https://github.com/lupyuen/pinetime-rust-mynewt/tree/lvgl
 
-TODO
+TODO: Include Rust Bindings for LVGL from https://github.com/rafaelcaricio/lvgl-rs
 
 <h1 align="center"> LVGL - Light and Versatile Graphics Library</h1>
 
