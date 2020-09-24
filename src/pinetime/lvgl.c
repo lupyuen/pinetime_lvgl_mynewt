@@ -37,7 +37,7 @@ void pinetime_lvgl_mynewt_init(void) {
 
 /// Render a Button Widget and a Label Widget
 void pinetime_lvgl_mynewt_test(void) {
-    puts("In C: Rendering widgets...");
+    puts("Render LVGL widgets...");
     lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     //  Add a button the current screen
     lv_obj_set_pos(btn, 10, 10);                            //  Set its position
     lv_obj_set_size(btn, 120, 50);                          //  Set its size
@@ -48,7 +48,7 @@ void pinetime_lvgl_mynewt_test(void) {
 
 /// Render the LVGL display
 void pinetime_lvgl_mynewt_render(void) {
-    puts("In C: Rendering display...");
+    puts("Render LVGL display...");
     //  Must tick at least 100 milliseconds to force LVGL to update display
     lv_tick_inc(100);
     //  LVGL will flush our display driver
