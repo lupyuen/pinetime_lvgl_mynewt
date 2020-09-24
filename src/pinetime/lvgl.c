@@ -32,28 +32,28 @@ void pinetime_lvgl_mynewt_init(void) {
     console_printf("Init LVGL..."); console_flush();
 
     //  Init the display controller
-    int rc = pinetime_lvgl_mynewt_init_display(); assert(rc == 0);
+    ////int rc = pinetime_lvgl_mynewt_init_display(); assert(rc == 0);
 
     //  Init the LVGL display
-    lv_init();
-    lv_port_disp_init();
+    ////lv_init();
+    ////lv_port_disp_init();
 }
 
 /// Render a Button Widget and a Label Widget
 int pinetime_lvgl_mynewt_test(void) {
-    puts("Render LVGL widgets...");
-    lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     //  Add a button the current screen
-    lv_obj_set_pos(btn, 10, 10);                            //  Set its position
-    lv_obj_set_size(btn, 120, 50);                          //  Set its size
+    console_printf("Test LVGL widgets..."); console_flush();
+    lv_obj_t *btn = lv_btn_create(lv_scr_act(), NULL);     //  Add a button the current screen
+    lv_obj_set_pos(btn, 10, 10);                           //  Set its position
+    lv_obj_set_size(btn, 120, 50);                         //  Set its size
 
-    lv_obj_t * label = lv_label_create(btn, NULL);          //  Add a label to the button
-    lv_label_set_text(label, "Mynewt LVGL");                //  Set the label text
+    lv_obj_t *label = lv_label_create(btn, NULL);          //  Add a label to the button
+    lv_label_set_text(label, "Hello");                //  Set the label text
     return 0;
 }
 
 /// Render the LVGL display
 int pinetime_lvgl_mynewt_render(void) {
-    puts("Render LVGL display...");
+    console_printf("Render LVGL display..."); console_flush();
     //  Must tick at least 100 milliseconds to force LVGL to update display
     lv_tick_inc(100);
     //  LVGL will flush our display driver
