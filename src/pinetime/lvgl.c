@@ -40,21 +40,23 @@ void pinetime_lvgl_mynewt_init(void) {
 }
 
 /// Render a Button Widget and a Label Widget
-void pinetime_lvgl_mynewt_test(void) {
+int pinetime_lvgl_mynewt_test(void) {
     puts("Render LVGL widgets...");
     lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     //  Add a button the current screen
     lv_obj_set_pos(btn, 10, 10);                            //  Set its position
     lv_obj_set_size(btn, 120, 50);                          //  Set its size
 
     lv_obj_t * label = lv_label_create(btn, NULL);          //  Add a label to the button
-    lv_label_set_text(label, "Button");                     //  Set the labels text
+    lv_label_set_text(label, "Mynewt LVGL");                //  Set the label text
+    return 0;
 }
 
 /// Render the LVGL display
-void pinetime_lvgl_mynewt_render(void) {
+int pinetime_lvgl_mynewt_render(void) {
     puts("Render LVGL display...");
     //  Must tick at least 100 milliseconds to force LVGL to update display
     lv_tick_inc(100);
     //  LVGL will flush our display driver
     lv_task_handler();
+    return 0;
 }
