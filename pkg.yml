@@ -39,3 +39,8 @@ pkg.deps:
 pkg.init:
     # pinetime_lvgl_mynewt should be initialised last, when SPI and Semihosting Console are up
     pinetime_lvgl_mynewt_init: 900  # Call pinetime_lvgl_mynewt_init() to initialise LVGL
+
+#  C compiler flags
+pkg.cflags:
+    - -DLV_CONF_INCLUDE_SIMPLE         #  Compile with libs/pinetime_lvgl_mynewt/lv_conf.h
+    - -Ilibs/pinetime_lvgl_mynewt
