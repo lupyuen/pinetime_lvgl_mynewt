@@ -27,6 +27,7 @@
 #include <hal/hal_spi.h>
 #include <stdio.h>
 #include <string.h>
+#include "lv_port_disp.h"
 
 //  GPIO Pins. From rust\piet-embedded\piet-embedded-graphics\src\display.rs
 #define DISPLAY_SPI   0  //  Mynewt SPI port 0
@@ -94,12 +95,8 @@
 #define PortraitSwapped 0xC0
 #define LandscapeSwapped 0xA0
 
-static int init_display(void);
-static int set_window(uint8_t left, uint8_t top, uint8_t right, uint8_t bottom);
 static int hard_reset(void);
 static int set_orientation(uint8_t orientation);
-static int write_command(uint8_t command, const uint8_t *params, uint16_t len);
-static int write_data(const uint8_t *data, uint16_t len);
 static int transmit_spi(const uint8_t *data, uint16_t len);
 static void delay_ms(uint32_t ms);
 
@@ -110,7 +107,7 @@ static uint8_t flash_buffer[BATCH_SIZE];
 /// Derived from https://github.com/lupyuen/pinetime-rust-mynewt/blob/main/logs/spi-non-blocking.log
 int NOTUSED_display_image(void) {
     console_printf("Displaying image...\n"); console_flush();
-    int rc = init_display();  assert(rc == 0);
+    int rc = pinetime_lvgl_mynewt_init_display();  assert(rc == 0);
     rc = set_orientation(Landscape);  assert(rc == 0);
 
     //  Render each row of pixels.
@@ -138,11 +135,11 @@ int NOTUSED_display_image(void) {
             //  console_printf("%lx: ", offset); console_dump(flash_buffer, len); console_printf("\n"); console_flush();
 
             //  Set the display window.
-            rc = set_window(left, top, right, bottom); assert(rc == 0);
+            rc = pinetime_lvgl_mynewt_set_window(left, top, right, bottom); assert(rc == 0);
 
             //  Write Pixels (RAMWR): st7735_lcd::draw() → set_pixel()
-            rc = write_command(RAMWR, NULL, 0); assert(rc == 0);
-            rc = write_data(flash_buffer, len); assert(rc == 0);
+            rc = pinetime_lvgl_mynewt_write_command(RAMWR, NULL, 0); assert(rc == 0);
+            rc = pinetime_lvgl_mynewt_write_data(flash_buffer, len); assert(rc == 0);
 
             left = right + 1;
         }
@@ -152,32 +149,32 @@ int NOTUSED_display_image(void) {
     //  Set Address Window Columns (CASET): st7735_lcd::draw() → set_pixel() → set_address_window()
     write_command(CASET, NULL, 0);
     static const uint8_t CASET1_PARA[] = { 0x00, 0x00, 0x00, 0x13 };
-    write_data(CASET1_PARA, sizeof(CASET1_PARA));  //  Col 0 to 19
+    pinetime_lvgl_mynewt_write_data(CASET1_PARA, sizeof(CASET1_PARA));  //  Col 0 to 19
 
     //  Set Address Window Rows (RASET): st7735_lcd::draw() → set_pixel() → set_address_window()
     write_command(RASET, NULL, 0);
     static const uint8_t RASET1_PARA[] = { 0x00, 0x00, 0x00, 0x00 };
-    write_data(RASET1_PARA, sizeof(RASET1_PARA));  //  Row 0 to 0
+    pinetime_lvgl_mynewt_write_data(RASET1_PARA, sizeof(RASET1_PARA));  //  Row 0 to 0
 
     //  Write Pixels (RAMWR): st7735_lcd::draw() → set_pixel()
     write_command(RAMWR, NULL, 0);
     static const uint8_t RAMWR1_PARA[] = { 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0 };
-    write_data(RAMWR1_PARA, sizeof(RAMWR1_PARA));  //  40 bytes
+    pinetime_lvgl_mynewt_write_data(RAMWR1_PARA, sizeof(RAMWR1_PARA));  //  40 bytes
 
     //  Set Address Window Columns (CASET): st7735_lcd::draw() → set_pixel() → set_address_window()
     write_command(CASET, NULL, 0);
     static const uint8_t CASET2_PARA[] = { 0x00, 0x14, 0x00, 0x27 };
-    write_data(CASET2_PARA, sizeof(CASET2_PARA));  //  Col 20 to 39
+    pinetime_lvgl_mynewt_write_data(CASET2_PARA, sizeof(CASET2_PARA));  //  Col 20 to 39
 
     //  Set Address Window Rows (RASET): st7735_lcd::draw() → set_pixel() → set_address_window()
     write_command(RASET, NULL, 0);
     static const uint8_t RASET2_PARA[] = { 0x00, 0x00, 0x00, 0x00 };
-    write_data(RASET2_PARA, sizeof(RASET2_PARA));  //  Row 0 to 0
+    pinetime_lvgl_mynewt_write_data(RASET2_PARA, sizeof(RASET2_PARA));  //  Row 0 to 0
 
     //  Write Pixels (RAMWR): st7735_lcd::draw() → set_pixel()
     write_command(RAMWR, NULL, 0);
     static const uint8_t RAMWR2_PARA[] = { 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0, 0x87, 0xe0 };
-    write_data(RAMWR2_PARA, sizeof(RAMWR2_PARA));  //  40 bytes
+    pinetime_lvgl_mynewt_write_data(RAMWR2_PARA, sizeof(RAMWR2_PARA));  //  40 bytes
     */
 
     console_printf("Image displayed\n"); console_flush();
@@ -185,24 +182,24 @@ int NOTUSED_display_image(void) {
 }
 
 /// Set the ST7789 display window to the coordinates (left, top), (right, bottom)
-static int set_window(uint8_t left, uint8_t top, uint8_t right, uint8_t bottom) {
+int pinetime_lvgl_mynewt_set_window(uint8_t left, uint8_t top, uint8_t right, uint8_t bottom) {
     assert(left < COL_COUNT && right < COL_COUNT && top < ROW_COUNT && bottom < ROW_COUNT);
     assert(left <= right);
     assert(top <= bottom);
     //  Set Address Window Columns (CASET): st7735_lcd::draw() → set_pixel() → set_address_window()
-    int rc = write_command(CASET, NULL, 0); assert(rc == 0);
+    int rc = pinetime_lvgl_mynewt_write_command(CASET, NULL, 0); assert(rc == 0);
     uint8_t col_para[4] = { 0x00, left, 0x00, right };
-    rc = write_data(col_para, 4); assert(rc == 0);
+    rc = pinetime_lvgl_mynewt_write_data(col_para, 4); assert(rc == 0);
 
     //  Set Address Window Rows (RASET): st7735_lcd::draw() → set_pixel() → set_address_window()
-    rc = write_command(RASET, NULL, 0); assert(rc == 0);
+    rc = pinetime_lvgl_mynewt_write_command(RASET, NULL, 0); assert(rc == 0);
     uint8_t row_para[4] = { 0x00, top, 0x00, bottom };
-    rc = write_data(row_para, 4); assert(rc == 0);
+    rc = pinetime_lvgl_mynewt_write_data(row_para, 4); assert(rc == 0);
     return 0;
 }
 
 /// Runs commands to initialize the display. From https://github.com/lupyuen/st7735-lcd-batch-rs/blob/master/src/lib.rs
-static int init_display(void) {
+int pinetime_lvgl_mynewt_init_display(void) {
     //  Assume that SPI port 0 has been initialised by the SPI Flash Driver at startup.
     int rc;
     rc = hal_gpio_init_out(DISPLAY_RST, 1); assert(rc == 0);
@@ -212,57 +209,58 @@ static int init_display(void) {
     rc = hal_gpio_init_out(DISPLAY_HIGH, 0); assert(rc == 0);
 
     hard_reset();
-    write_command(SWRESET, NULL, 0);
+    pinetime_lvgl_mynewt_write_command(SWRESET, NULL, 0);
     delay_ms(200);
-    write_command(SLPOUT, NULL, 0);
+    pinetime_lvgl_mynewt_write_command(SLPOUT, NULL, 0);
     delay_ms(200);
 
+    //  TODO: These commands are actually for ST7735, not ST7789, but seem to work with ST7789. Should be changed to ST7789.
     static const uint8_t FRMCTR1_PARA[] = { 0x01, 0x2C, 0x2D };
-    write_command(FRMCTR1, FRMCTR1_PARA, sizeof(FRMCTR1_PARA));
+    pinetime_lvgl_mynewt_write_command(FRMCTR1, FRMCTR1_PARA, sizeof(FRMCTR1_PARA));
 
     static const uint8_t FRMCTR2_PARA[] = { 0x01, 0x2C, 0x2D };
-    write_command(FRMCTR2, FRMCTR2_PARA, sizeof(FRMCTR2_PARA));
+    pinetime_lvgl_mynewt_write_command(FRMCTR2, FRMCTR2_PARA, sizeof(FRMCTR2_PARA));
 
     static const uint8_t FRMCTR3_PARA[] = { 0x01, 0x2C, 0x2D, 0x01, 0x2C, 0x2D };
-    write_command(FRMCTR3, FRMCTR3_PARA, sizeof(FRMCTR3_PARA));
+    pinetime_lvgl_mynewt_write_command(FRMCTR3, FRMCTR3_PARA, sizeof(FRMCTR3_PARA));
 
     static const uint8_t INVCTR_PARA[] = { 0x07 };
-    write_command(INVCTR, INVCTR_PARA, sizeof(INVCTR_PARA));
+    pinetime_lvgl_mynewt_write_command(INVCTR, INVCTR_PARA, sizeof(INVCTR_PARA));
 
     static const uint8_t PWCTR1_PARA[] = { 0xA2, 0x02, 0x84 };
-    write_command(PWCTR1, PWCTR1_PARA, sizeof(PWCTR1_PARA));
+    pinetime_lvgl_mynewt_write_command(PWCTR1, PWCTR1_PARA, sizeof(PWCTR1_PARA));
 
     static const uint8_t PWCTR2_PARA[] = { 0xC5 };
-    write_command(PWCTR2, PWCTR2_PARA, sizeof(PWCTR2_PARA));
+    pinetime_lvgl_mynewt_write_command(PWCTR2, PWCTR2_PARA, sizeof(PWCTR2_PARA));
     
     static const uint8_t PWCTR3_PARA[] = { 0x0A, 0x00 };
-    write_command(PWCTR3, PWCTR3_PARA, sizeof(PWCTR3_PARA));
+    pinetime_lvgl_mynewt_write_command(PWCTR3, PWCTR3_PARA, sizeof(PWCTR3_PARA));
     
     static const uint8_t PWCTR4_PARA[] = { 0x8A, 0x2A };
-    write_command(PWCTR4, PWCTR4_PARA, sizeof(PWCTR4_PARA));
+    pinetime_lvgl_mynewt_write_command(PWCTR4, PWCTR4_PARA, sizeof(PWCTR4_PARA));
     
     static const uint8_t PWCTR5_PARA[] = { 0x8A, 0xEE };
-    write_command(PWCTR5, PWCTR5_PARA, sizeof(PWCTR5_PARA));
+    pinetime_lvgl_mynewt_write_command(PWCTR5, PWCTR5_PARA, sizeof(PWCTR5_PARA));
     
     static const uint8_t VMCTR1_PARA[] = { 0x0E };
-    write_command(VMCTR1, VMCTR1_PARA, sizeof(VMCTR1_PARA));
+    pinetime_lvgl_mynewt_write_command(VMCTR1, VMCTR1_PARA, sizeof(VMCTR1_PARA));
 
     if (INVERTED) {
-        write_command(INVON, NULL, 0);
+        pinetime_lvgl_mynewt_write_command(INVON, NULL, 0);
     } else {
-        write_command(INVOFF, NULL, 0);
+        pinetime_lvgl_mynewt_write_command(INVOFF, NULL, 0);
     }
     if (RGB) {
         static const uint8_t MADCTL1_PARA[] = { 0x00 };
-        write_command(MADCTL, MADCTL1_PARA, sizeof(MADCTL1_PARA));
+        pinetime_lvgl_mynewt_write_command(MADCTL, MADCTL1_PARA, sizeof(MADCTL1_PARA));
     } else {
         static const uint8_t MADCTL2_PARA[] = { 0x08 };
-        write_command(MADCTL, MADCTL2_PARA, sizeof(MADCTL2_PARA));
+        pinetime_lvgl_mynewt_write_command(MADCTL, MADCTL2_PARA, sizeof(MADCTL2_PARA));
     }
     static const uint8_t COLMOD_PARA[] = { 0x05 };
-    write_command(COLMOD, COLMOD_PARA, sizeof(COLMOD_PARA));
+    pinetime_lvgl_mynewt_write_command(COLMOD, COLMOD_PARA, sizeof(COLMOD_PARA));
     
-    write_command(DISPON, NULL, 0);
+    pinetime_lvgl_mynewt_write_command(DISPON, NULL, 0);
     delay_ms(200);
     return 0;
 }
@@ -279,30 +277,30 @@ static int hard_reset(void) {
 static int set_orientation(uint8_t orientation) {
     if (RGB) {
         uint8_t orientation_para[1] = { orientation };
-        int rc = write_command(MADCTL, orientation_para, 1);
+        int rc = pinetime_lvgl_mynewt_write_command(MADCTL, orientation_para, 1);
         assert(rc == 0);
     } else {
         uint8_t orientation_para[1] = { orientation | 0x08 };
-        int rc = write_command(MADCTL, orientation_para, 1);
+        int rc = pinetime_lvgl_mynewt_write_command(MADCTL, orientation_para, 1);
         assert(rc == 0);
     }
     return 0;
 }
 
 /// Transmit ST7789 command
-static int write_command(uint8_t command, const uint8_t *params, uint16_t len) {
+int pinetime_lvgl_mynewt_write_command(uint8_t command, const uint8_t *params, uint16_t len) {
     hal_gpio_write(DISPLAY_DC, 0);
     int rc = transmit_spi(&command, 1);
     assert(rc == 0);
     if (params != NULL && len > 0) {
-        rc = write_data(params, len);
+        rc = pinetime_lvgl_mynewt_write_data(params, len);
         assert(rc == 0);
     }
     return 0;
 }
 
 /// Transmit ST7789 data
-static int write_data(const uint8_t *data, uint16_t len) {
+int pinetime_lvgl_mynewt_write_data(const uint8_t *data, uint16_t len) {
     hal_gpio_write(DISPLAY_DC, 1);
     transmit_spi(data, len);
     return 0;

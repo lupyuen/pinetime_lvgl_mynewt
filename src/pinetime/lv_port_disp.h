@@ -51,8 +51,19 @@ extern "C" {
 
 void lv_port_disp_init(void);
 
-//  Defined in lvgl.c
-void put_display_px(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+//  Defined in display.c
+
+/// Set the ST7789 display window to the coordinates (left, top), (right, bottom)
+int pinetime_lvgl_mynewt_set_window(uint8_t left, uint8_t top, uint8_t right, uint8_t bottom);
+
+/// Runs commands to initialize the display
+int pinetime_lvgl_mynewt_init_display(void);
+
+/// Transmit ST7789 command
+int pinetime_lvgl_mynewt_write_command(uint8_t command, const uint8_t *params, uint16_t len);
+
+/// Transmit ST7789 data
+int pinetime_lvgl_mynewt_write_data(const uint8_t *data, uint16_t len);
 
 /**********************
  *      MACROS

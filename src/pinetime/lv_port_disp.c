@@ -151,31 +151,30 @@ static void disp_init(void)
     /*You code here*/
 }
 
+//  ST7789 Commands. From https://github.com/lupyuen/st7735-lcd-batch-rs/blob/master/src/instruction.rs
+//  TODO: Move to display.c
+#define RAMWR 0x2C
+
 /* Flush the content of the internal buffer the specific area on the display
  * You can use DMA or any hardware acceleration to do this operation in the background but
  * 'lv_disp_flush_ready()' has to be called when finished. */
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
     console_printf("Flush display: left=%d, top=%d, right=%d, bottom=%d...\n", area->x1, area->y1, area->x2, area->y2);
-    /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
+    assert(area->x2 >= area->x1);
+    assert(area->y2 >= area->y1);
 
-    int32_t x;
-    int32_t y;
-    for(y = area->y1; y <= area->y2; y++) {
-        for(x = area->x1; x <= area->x2; x++) {
-            //  Put a pixel to the display in RGB565 format
-            put_display_px(x, y, 
-                color_p->ch.red   << 3, //  5 bits for Red, scaled to 8 bits
-#if LV_COLOR_16_SWAP
-                ((color_p->ch.green_h << 3) + color_p->ch.green_l) << 2,   //  6 bits for Green, scaled to 8 bits
-#else
-                color_p->ch.green << 2, //  6 bits for Green, scaled to 8 bits
-#endif  //  LV_COLOR_16_SWAP
-                color_p->ch.blue  << 3, //  5 bits for Blue, scaled to 8 bits
-                0xff);
-            color_p++;
-        }
-    }
+    //  Set the ST7789 display window
+    int rc = pinetime_lvgl_mynewt_set_window(area->x1, area->y1, area->x2, area->y2); assert(rc == 0);
+
+    //  Write Pixels (RAMWR): st7735_lcd::draw() → set_pixel()
+    //  TODO: Move to display.c
+    int len = 
+        ((area->x2 - area->x1) + 1) *  //  Width
+        ((area->y2 - area->y1) + 1) *  //  Height
+        2;                             //  2 bytes per pixel
+    rc = pinetime_lvgl_mynewt_write_command(RAMWR, NULL, 0); assert(rc == 0);
+    rc = pinetime_lvgl_mynewt_write_data((const uint8_t *) color_p, len); assert(rc == 0);
 
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing*/

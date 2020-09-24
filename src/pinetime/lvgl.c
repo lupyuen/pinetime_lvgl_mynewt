@@ -17,6 +17,7 @@
  * under the License.
  */
 //  LVGL Interface for PineTime on Mynewt
+#include <assert.h>
 #include <os/os.h>
 #include <hal/hal_bsp.h>
 #include <hal/hal_gpio.h>
@@ -29,6 +30,9 @@
 /// Init the LVGL library. Called by sysinit() during startup, defined in pkg.yml.
 void pinetime_lvgl_mynewt_init(void) {    
     console_printf("Init LVGL..."); console_flush();
+
+    //  Init the display controller
+    int rc = pinetime_lvgl_mynewt_init_display(); assert(rc == 0);
 
     //  Init the LVGL display
     lv_init();
