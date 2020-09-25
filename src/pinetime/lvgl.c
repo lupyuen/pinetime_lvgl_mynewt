@@ -27,9 +27,12 @@
 #include "lvgl.h"
 #include "lv_port_disp.h"
 
+static bool pinetime_lvgl_mynewt_started = false;
+
 /// Init the LVGL library. Called by sysinit() during startup, defined in pkg.yml.
 void pinetime_lvgl_mynewt_init(void) {    
     console_printf("Init LVGL...\n"); console_flush();
+    assert(pinetime_lvgl_mynewt_started == false);
 
     //  Init the display controller
     int rc = pinetime_lvgl_mynewt_init_display(); assert(rc == 0);
@@ -37,6 +40,7 @@ void pinetime_lvgl_mynewt_init(void) {
     //  Init the LVGL display
     lv_init();
     lv_port_disp_init();
+    pinetime_lvgl_mynewt_started = true;
 }
 
 /// Render a Button Widget and a Label Widget
