@@ -250,13 +250,9 @@ int pinetime_lvgl_mynewt_init_display(void) {
     } else {
         pinetime_lvgl_mynewt_write_command(INVOFF, NULL, 0);
     }
-    if (RGB) {
-        static const uint8_t MADCTL1_PARA[] = { 0x00 };
-        pinetime_lvgl_mynewt_write_command(MADCTL, MADCTL1_PARA, sizeof(MADCTL1_PARA));
-    } else {
-        static const uint8_t MADCTL2_PARA[] = { 0x08 };
-        pinetime_lvgl_mynewt_write_command(MADCTL, MADCTL2_PARA, sizeof(MADCTL2_PARA));
-    }
+
+    set_orientation(Landscape);
+
     static const uint8_t COLMOD_PARA[] = { 0x05 };
     pinetime_lvgl_mynewt_write_command(COLMOD, COLMOD_PARA, sizeof(COLMOD_PARA));
     
