@@ -1,3 +1,4 @@
+//  TODO: Sync with WebAssembly Simulator: https://github.com/AppKaki/lvgl-wasm/blob/mynewt/lv_conf.h
 /**
  * @file lv_conf.h
  * Configuration file for LVGL v7.1.0
