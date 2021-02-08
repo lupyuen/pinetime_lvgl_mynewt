@@ -1,3 +1,15 @@
+# pinetime_lvgl_mynewt: LVGL 7 Library for PineTime Smart Watch on Apache Mynewt OS
+
+This library should be located at `pinetime-rust-mynewt/libs/pinetime_lvgl_mynewt`
+
+Refer to...
+
+- [Bluetooth Time Sync and LVGL on PineTime Mynewt](https://lupyuen.github.io/pinetime-rust-mynewt/articles/timesync)
+
+- [pinetime-rust-mynewt](https://github.com/lupyuen/pinetime-rust-mynewt)
+
+- [pinetime-lvgl](https://github.com/lupyuen/pinetime-lvgl)
+
 <h1 align="center"> LVGL - Light and Versatile Graphics Library</h1>
 
 <p align="center">
